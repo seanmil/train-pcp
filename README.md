@@ -31,7 +31,7 @@ $ inspec detect -t pcp://<certname>
 ```
 
 Example output (for a CentOS 7 system)
-``
+```
 == Platform Details
 
 Name:      centos
@@ -47,7 +47,7 @@ hello
 
 The PCP transport configuration will normally be read from the PE client tools orchestrator.conf
 file, as described at
-https://puppet.com/docs/pe/2018.1/configuring_puppet_orchestrator.html#puppet-orchestrator-configuration-files
+[PE 2018.1 docs](https://puppet.com/docs/pe/2018.1/configuring_puppet_orchestrator.html#puppet-orchestrator-configuration-files)
 
 If, for whatever reason, your configuration does not exist or you want/need to override it, you
 can manually set the configuration in InSpec's JSON configuration file (as specified by `--json-config`).
