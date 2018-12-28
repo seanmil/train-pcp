@@ -36,6 +36,7 @@ module TrainPlugins
         @environment = @pcp_options.delete('environment') || 'production'
         @cacert = @pcp_options.delete('cacert')
         @token_file = @pcp_options.delete('token_file')
+        @plan_job = @options.delete(:plan_job)
       end
 
       def file_via_connection(path)
@@ -75,6 +76,7 @@ module TrainPlugins
           task: name,
           params: params,
         }
+        req[:plan_job] = @plan_job unless @plan_job.nil?
         session.run_task(req)
       end
 
