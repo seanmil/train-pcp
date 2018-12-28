@@ -95,6 +95,7 @@ module TrainPlugins
         opts['service-url'] = uri unless uri.nil?
         opts['cacert'] = @cacert unless @cacert.nil?
         opts['token-file'] = @token_file unless @token_file.nil?
+        opts['job_poll_interval'] = 0.1
 
         @session = OrchestratorClient.new(opts, load_files: true)
       end
