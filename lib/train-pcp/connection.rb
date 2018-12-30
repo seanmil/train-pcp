@@ -38,10 +38,10 @@ module TrainPlugins
       end
 
       def file_via_connection(path)
-        # TODO: We should revamp this in terms of a "download" task that grabs
+        # TODO: Should this be redone in terms of a "download" task that grabs
         # the content and stat in terms of a Puppet Task which transfers the
         # file contents base64 encoded to protect it from encoding troubles in
-        # transit.
+        # transit - or is this good enough?
         if os.windows?
           Train::File::Remote::Windows.new(self, path)
         elsif os.aix?
