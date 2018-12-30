@@ -44,12 +44,12 @@ module TrainPlugins
         # the content and stat in terms of a Puppet Task which transfers the
         # file contents base64 encoded to protect it from encoding troubles in
         # transit.
-        if os.aix?
+        if os.windows?
+          Train::File::Remote::Windows.new(self, path)
+        elsif os.aix?
           Train::File::Remote::Aix.new(self, path)
         elsif os.solaris?
           Train::File::Remote::Unix.new(self, path)
-        elsif os[:name] == 'qnx'
-          Train::File::Remote::Qnx.new(self, path)
         else
           Train::File::Remote::Linux.new(self, path)
         end
