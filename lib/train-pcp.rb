@@ -17,5 +17,5 @@ require 'train-pcp/version'
 # A train plugin has three components: Transport, Connection, and Platform.
 # Transport acts as the glue.
 require 'train-pcp/transport'
-# require 'train-pcp/platform'
+require 'train-pcp/platform'
 require 'train-pcp/connection'

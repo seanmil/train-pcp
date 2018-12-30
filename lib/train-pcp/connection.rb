@@ -1,16 +1,14 @@
 require 'train'
-
-# TODO: Add PuppetDB-based facter platform detection:
-# require 'train-pcp/platform'
+require 'train-pcp/platform'
 
 require 'orchestrator_client'
 
 module TrainPlugins
   module PCP
     class Connection < Train::Plugins::Transport::BaseConnection
-      # TODO: We should look at pulling the platform detection from PuppetDB based on
-      # Facter data, but for now the default works:
-      # include TrainPlugins::PCP::Platform
+      include TrainPlugins::PCP::Platform
+
+      attr_reader :node
 
       def initialize(options)
         # 'options' here is a hash, Symbol-keyed,

@@ -1,29 +1,74 @@
 module TrainPlugins::PCP
   module Platform
-    # The method `platform` is called when platform detection is
-    # about to be performed.  Train core defines a sophisticated
-    # system for platform detection, but for most plugins, you'll
-    # only ever run on the special platform for which you are targeting.
     def platform
-      # If you are declaring a new platform, you will need to tell
-      # Train a bit about it.
-      # If you were defining a cloud API, you should say you are a member
-      # of the cloud family.
+      return @platform unless @platform.nil?
 
-      # This plugin makes up a new platform.  Train (or rather InSpec) only
-      # know how to read files on Windows and Un*x (MacOS is a kind of Un*x),
-      # so we'll say we're part of those families.
+      begin
+        require 'puppetdb'
+      rescue LoadError
+        logger.debug('[PCP] Skipping PuppetDB-based platform detection, "gem install puppetdb-ruby" to enable.')
+        nil
+      end
 
-      # When you know you will only ever run on your dedicated platform
-      # (for example, a plugin named train-aws would only run on the AWS
-      # API, which we report as the 'aws' platform).
-      # force_platform! lets you bypass platform detection.
-      # The options to this are not currently documented completely.
+      p = begin
+            PuppetDB::Client.new()
+          rescue NameError
+            nil
 
-      # Use release to report a version number.  You might use the version
-      # of the plugin, or a version of an important underlying SDK, or a
-      # version of a remote API.
-      # force_platform!('local-rot13', release: TrainPlugins::LocalRot13::VERSION)
+          # If the 'puppetdb-ruby' version is too old and does not support auto-detection then it will
+          # raise an ArgumentError:
+          rescue ArgumentError
+            logger.debug('[PCP] Skipping PuppetDB-based platform detection, "puppetdb-ruby" too old.')
+            nil
+          end
+
+      if p.nil?
+        logger.debug('[PCP] Using standard OS-based platform detection.')
+        return @platform ||= super()
+      end
+
+      resp = p.request('', "facts { certname = '#{node}' and name = 'os' }")
+
+      if resp.data.first.nil?
+        logger.debug("[PCP] No facts found for #{node}, using standard OS-based platform detection.")
+        return @platform ||= super()
+      end
+
+      os = resp.data.first['value']
+
+      value = {}
+      value[:release] = os['release']['full']
+      value[:arch] = os['architecture']
+
+      # We have to match the platform names from Train::Platforms::Detect::Specifications::OS
+      # the families will be auto-supplied by the hierarchies setup in that class, which were
+      # pre-loaded in the base plugin class.
+      name = case os['name'].downcase
+             when 'oraclelinux'
+               'oracle'
+             when 'sles'
+               'suse'
+             when 'darwin'
+               if os.has_key?('macosx')
+                 'mac_os_x'
+               else
+                 'darwin'
+               end
+             else
+               os['name'].downcase
+             end
+
+      platform = force_platform!(name, value)
+
+      if platform
+        logger.debug('[PCP] Platform detection found match via PuppetDB, using it.')
+        @platform = platform
+      else
+        logger.debug('[PCP] Platform detection found no match via PuppetDB, falling back to normal method.')
+        @platform = super()
+      end
+
+      return @platform
     end
   end
 end
